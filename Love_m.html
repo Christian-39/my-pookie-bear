@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kate Oluckukwu Ugwuanyi — My Forever Love</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        :root {
+            --pink-glow: #ff2a85;
+            --purple-glow: #7928ca;
+            --cyan-glow: #00dfd8;
+            --gold-glow: #ffd700;
+            --glass-bg: rgba(10, 5, 20, 0.5);
+            --glass-border: rgba(255, 42, 133, 0.2);
+            --font-love: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            overflow-x: hidden;
+            background-color: #020105;
+            color: #ffffff;
+            font-family: var(--font-love);
+        }
+
+        /* --- PRELOADER --- */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at center, #0f0215 0%, #020105 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s cubic-bezier(0.25, 1, 0.5, 1), visibility 1s;
+        }
+
+        .loader-heart {
+            font-size: 5rem;
+            color: var(--pink-glow);
+            animation: preloaderBeat 1.2s infinite cubic-bezier(0.215, 0.610, 0.355, 1);
+            text-shadow: 0 0 30px var(--pink-glow);
+            margin-bottom: 20px;
+        }
+
+        .loader-text {
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            color: #fff;
+            margin-bottom: 20px;
+            font-weight: 300;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        .loader-subtext {
+            font-size: 0.9rem;
+            color: var(--cyan-glow);
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .loader-bar-container {
+            width: 240px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .loader-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--purple-glow), var(--pink-glow), var(--cyan-glow));
+            box-shadow: 0 0 10px var(--pink-glow);
+            transition: width 0.1s linear;
+        }
+
+        @keyframes preloaderBeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.15); }
+            40% { transform: scale(1.05); }
+            60% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- CANVAS VIEWPORT --- */
+        #webgl-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        /* --- IMMERSIVE HEADERS & COUNTERS --- */
+        .overlay-ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 30px;
+        }
+
+        .interactive-element {
+            pointer-events: auto;
+        }
+
+        .top-deck {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            align-items: flex-start;
+        }
+
+        .love-stats {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            padding: 15px 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+
+        .counter-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--cyan-glow);
+            margin-bottom: 5px;
+        }
+
+        .counter-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #fff, var(--pink-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .date-badge {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.7);
+            margin-top: 5px;
+        }
+
+        .brand-badge {
+            font-size: 0.75rem;
+            color: var(--gold-glow);
+            margin-top: 3px;
+            letter-spacing: 1px;
+        }
+
+        /* --- HUD BUTTONS & CONTROLS --- */
+        .hud-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .glass-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .glass-btn:hover {
+            transform: scale(1.1);
+            border-color: var(--pink-glow);
+            box-shadow: 0 0 20px var(--pink-glow);
+        }
+
+        .music-panel {
+            display: flex;
+            align-items: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            padding: 5px 15px 5px 5px;
+            border-radius: 30px;
+            gap: 10px;
+        }
+
+        .volume-slider {
+            width: 0;
+            opacity: 0;
+            transition: width 0.3s, opacity 0.3s;
+            -webkit-appearance: none;
+            background: rgba(255,255,255,0.2);
+            height: 4px;
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .music-panel:hover .volume-slider {
+            width: 80px;
+            opacity: 1;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--pink-glow);
+            cursor: pointer;
+        }
+
+        /* --- ROMANTIC QUOTE GENERATOR --- */
+        .quote-ticker {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+            font-style: italic;
+            font-weight: 300;
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.85);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            transition: opacity 0.5s;
+        }
+
+        /* --- DOM PLANETS ORBITING LAYER --- */
+        #planets-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .dom-planet {
+            position: absolute;
+            pointer-events: auto;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: opacity 0.3s;
+        }
+
+        .planet-sphere {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: padding-box, linear-gradient(135deg, var(--pink-glow), var(--purple-glow));
+            border: 2px solid rgba(255,255,255,0.6);
+            box-shadow: 0 0 20px rgba(255, 42, 133, 0.6), inset 0 0 15px rgba(0,0,0,0.6);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .planet-sphere img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .planet-label {
+            margin-top: 8px;
+            background: rgba(5, 2, 12, 0.75);
+            border: 1px solid var(--glass-border);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            letter-spacing: 1px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        }
+
+        .dom-planet:hover .planet-sphere {
+            transform: scale(1.2);
+            border-color: var(--cyan-glow);
+            box-shadow: 0 0 35px var(--cyan-glow);
+        }
+
+        /* --- DIALOG MODAL --- */
+        .modal-mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(3, 1, 7, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .modal-mask.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-card {
+            background: linear-gradient(145deg, rgba(20, 10, 35, 0.8), rgba(5, 2, 10, 0.95));
+            border: 1px solid var(--glass-border);
+            width: 90%;
+            max-width: 450px;
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 25px 50px -12px rgba(255, 42, 133, 0.25);
+            text-align: center;
+            position: relative;
+            transform: scale(0.85) translateY(30px);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+        }
+
+        .modal-mask.active .modal-card {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+
+        .modal-close:hover { opacity: 1; }
+
+        .modal-img-frame {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            border: 3px solid var(--pink-glow);
+            box-shadow: 0 0 25px var(--pink-glow);
+            overflow: hidden;
+        }
+
+        .modal-img-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .modal-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(to right, #fff, var(--pink-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-body {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.8);
+            font-weight: 300;
+        }
+
+        /* --- CONTENT SCROLL SECTIONS BELOW --- */
+        .story-container {
+            position: relative;
+            z-index: 2;
+            margin-top: 100vh;
+            background: linear-gradient(to bottom, transparent, #040209 15vh, #020105 100%);
+            padding: 80px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 60px;
+        }
+
+        .scroll-prompt {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.4);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translate(-50%, 0); }
+            40% { transform: translate(-50%, -10px); }
+            60% { transform: translate(-50%, -5px); }
+        }
+
+        .story-card {
+            background: rgba(15, 8, 25, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            max-width: 700px;
+            width: 100%;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s ease;
+        }
+
+        .story-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+            border-color: rgba(255, 42, 133, 0.15);
+        }
+
+        .story-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--cyan-glow);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .story-card p {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: rgba(255,255,255,0.8);
+            font-weight: 300;
+        }
+
+        /* --- GALLERY SECTION --- */
+        .gallery-section {
+            max-width: 900px;
+            width: 100%;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .gallery-title {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: var(--pink-glow);
+            text-shadow: 0 0 20px rgba(255, 42, 133, 0.4);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .gallery-item {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            aspect-ratio: 1;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(255, 42, 133, 0.3);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.1);
+        }
+
+        .gallery-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            padding: 20px 10px 10px;
+            font-size: 0.85rem;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .gallery-item:hover .gallery-caption {
+            opacity: 1;
+        }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 768px) {
+            .overlay-ui { padding: 15px; }
+            .counter-value { font-size: 1.4rem; }
+            .planet-sphere { width: 50px; height: 50px; }
+            .planet-label { font-size: 0.65rem; }
+            .story-card { padding: 25px; }
+            .story-card h2 { font-size: 1.4rem; }
+            .quote-ticker { font-size: 0.95rem; bottom: 20px; }
+            .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="preloader">
+        <div class="loader-heart">♥</div>
+        <div class="loader-text">Building Our Universe...</div>
+        <div class="loader-subtext">For Kate Oluckukwu Ugwuanyi — My Everything</div>
+        <div class="loader-bar-container">
+            <div class="loader-bar" id="loader-bar"></div>
+        </div>
+    </div>
+
+    <div id="webgl-container"></div>
+
+    <div id="planets-overlay"></div>
+
+    <div class="overlay-ui">
+        <div class="top-deck">
+            <div class="love-stats interactive-element">
+                <div class="counter-title">My Love for Kate</div>
+                <div class="counter-value" id="love-counter">0,000,000</div>
+                <div class="date-badge" id="current-date">Loading Timeline...</div>
+                <div class="brand-badge">LUCHI'S HAIR ✨</div>
+            </div>
+
+            <div class="hud-controls interactive-element">
+                <div class="music-panel">
+                    <button class="glass-btn" id="btn-music" title="Toggle Romance Music">
+                        <i data-lucide="music"></i>
+                    </button>
+                    <input type="range" class="volume-slider" id="vol-slider" min="0" max="1" step="0.05" value="0.5">
+                </div>
+                <button class="glass-btn" id="btn-screenshot" title="Capture the Moment">
+                    <i data-lucide="camera"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="quote-ticker" id="quote-display">"Kate, you are the reason my heart beats differently..."</div>
+    </div>
+
+    <div class="modal-mask" id="planet-modal">
+        <div class="modal-card">
+            <button class="modal-close" id="modal-close-btn"><i data-lucide="x"></i></button>
+            <div class="modal-img-frame">
+                <img id="modal-img" src="" alt="Memory Asset">
+            </div>
+            <h3 class="modal-title" id="modal-title">Planet Name</h3>
+            <p class="modal-body" id="modal-body">Romantic details loading from cosmic memory cores...</p>
+        </div>
+    </div>
+
+    <div class="story-container">
+        <div class="scroll-prompt">
+            <span>Scroll Down to Read Our Story</span>
+            <i data-lucide="chevron-down"></i>
+        </div>
+
+        <div class="story-card">
+            <h2><i data-lucide="sparkles"></i> The Day I Found My Kate</h2>
+            <p>I still remember the first time I saw you. Not just with my eyes, but with something deeper. You walked into my life and suddenly everything made sense. Kate Oluckukwu Ugwuanyi — those four names became the most beautiful sound I know. I didn't just find a girlfriend that day. I found my home, my peace, my future wife.</p>
+        </div>
+
+        <div class="story-card">
+            <h2><i data-lucide="heart"></i> Why I Fall Harder Every Single Day</h2>
+            <p>It's not just your smile, though that alone could stop my heart. It's the way you care for people — your nursing spirit, that gentle strength you carry. It's watching you build LUCHI'S HAIR from nothing and turn it into something beautiful. It's the way you pray, the way you laugh at my stupid jokes, the way you look at me when you think I'm not watching. Baby, I don't just love you. I'm obsessed with every piece of you.</p>
+        </div>
+
+        <div class="story-card">
+            <h2><i data-lucide="stethoscope"></i> My Nurse, My Healer, My Everything</h2>
+            <p>You study nursing not just for a career, but because helping people is who you are. I've seen you tired from school, seen you push through when it got hard, seen that fire in your eyes when you talk about saving lives. Kate, you heal me every single day without even trying. When the world gets heavy, your voice is my medicine. Your touch is my cure. I can't wait to call you Dr. Ugwuanyi — but you'll always be my baby first.</p>
+        </div>
+
+        <div class="story-card">
+            <h2><i data-lucide="crown"></i> LUCHI'S HAIR — Your Crown, My Pride</h2>
+            <p>Watching you build your brand has been one of the greatest joys of my life. LUCHI'S HAIR isn't just a business to me — it's proof of who you are. Determined. Creative. Unstoppable. I brag about you to everyone. I show your work to people who don't even ask. Because I'm proud. I'm so proud to be the man standing beside you. One day the whole world will know your name, and I'll be right there saying "I knew her when..."</p>
+        </div>
+
+        <div class="story-card">
+            <h2><i data-lucide="infinity"></i> The Promise I Make to You</h2>
+            <p>I don't have all the money in the world yet. I can't give you everything you deserve right now. But I promise you this — every breath I take is working toward giving you the life you dream of. I will marry you, Kate. I will build a family with you. I will grow old holding your hand. Through nursing school, through building LUCHI'S HAIR, through every high and low — I'm not going anywhere. You're stuck with me, baby. Forever.</p>
+        </div>
+
+        <div class="story-card">
+            <h2><i data-lucide="moon"></i> To My Future Wife</h2>
+            <p>They say when you know, you know. And I know. I knew from the moment I understood what love really meant. You're not my girlfriend — you're my wife in waiting. The ring is coming. The wedding is coming. The forever is coming. Until then, let this little galaxy I've built for you be a reminder: you are my sun, my moon, my stars, my entire sky. Kate Oluckukwu Ugwuanyi, I love you more than words will ever hold. And that's a promise.</p>
+        </div>
+
+        <!-- GALLERY SECTION -->
+        <div class="gallery-section">
+            <h2 class="gallery-title"><i data-lucide="images"></i> Our Beautiful Moments</h2>
+            <div class="gallery-grid" id="gallery-grid">
+                <!-- Gallery items will be populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <audio id="bg-audio" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+
+    <script>
+        // Initialize icons
+        lucide.createIcons();
+
+        /* --- SYSTEM PRE-CONFIGURATIONS & MEMORY DATA MATRIX --- */
+        const PLANETS_DATA = [
+            { id: 0, label: "Our First Day", title: "Where It All Began", desc: "The day I met Kate Oluckukwu Ugwuanyi. My life changed forever. I didn't just meet a girl — I met my future, my peace, my everything.", img: "Snapchat-1328708290.jpg", radius: 28, speed: 0.15, angle: 0 },
+            { id: 1, label: "My Beautiful Nurse", title: "The Healing Hands", desc: "My baby studying to save lives. I watch you pour your heart into nursing and it makes me love you deeper. You're going to be an amazing nurse, Kate. The world needs you.", img: "IMG-20250318-WA0035.jpg", radius: 36, speed: 0.11, angle: 1.2 },
+            { id: 2, label: "LUCHI'S HAIR", title: "The Boss Lady", desc: "Your brand, your dream, your hard work. LUCHI'S HAIR is proof that you can do anything you set your mind to. I'm your biggest fan, baby. Always.", img: "20251217_141610.jpg", radius: 44, speed: 0.08, angle: 2.5 },
+            { id: 3, label: "My Heart", title: "Kate = My Universe", desc: "You are the center of everything I do. Every decision, every plan, every prayer — you're in it. I don't know how to live without you anymore, and I don't want to find out.", img: "20251217_102943.jpg", radius: 52, speed: 0.06, angle: 3.8 },
+            { id: 4, label: "Us Together", title: "Our Perfect Moments", desc: "Every photo of us together is my treasure. I look at them when I miss you, which is all the time. You're the most beautiful woman in every room, and I'm the luckiest man alive.", img: "20251217_102924.jpg", radius: 60, speed: 0.05, angle: 4.9 },
+            { id: 5, label: "Forever Us", title: "Till the End of Time", desc: "I see forever when I look at you. I see our children, our home, our grey hairs. I see us laughing at 80 about the days we were young and crazy in love. That's us, baby. That's always going to be us.", img: "Snapchat-405047685.jpg", radius: 68, speed: 0.04, angle: 0.7 },
+            { id: 6, label: "My Queen", title: "Kate the Great", desc: "You're not just beautiful — you're brilliant, kind, strong, and mine. I still can't believe you chose me. I promise to spend every day earning that choice. I love you, my queen.", img: "IMG-20250412-WA0001.jpg", radius: 76, speed: 0.03, angle: 2.1 },
+            { id: 7, label: "Our Galaxy", title: "Built for You", desc: "This entire universe I coded? It's all for you. Every star, every heartbeat, every spinning planet — it's my love letter to you, Kate. Because you deserve a galaxy.", img: "https://kimi-web-img.moonshot.cn/img/wallpapers.com/afe5aa47b7ebea15348977a27ebfa44ee83624db.jpg", radius: 84, speed: 0.02, angle: 5.4 },
+            { id: 8, label: "My Future Wife", title: "The Promise", desc: "One day soon, I'll kneel before you with a ring. One day soon, I'll call you my wife. Until then, know this — my heart is already yours. Completely. Permanently. Irrevocably.", img: "https://kimi-web-img.moonshot.cn/img/as1.ftcdn.net/90309dece3dacdb99fdde39b5561f5a9a7372f69.jpg", radius: 92, speed: 0.018, angle: 1.5 },
+            { id: 9, label: "Dancing in Rain", title: "Through Every Storm", desc: "I'll dance with you in the rain, hold you through the storms, and love you through every season. You're my person, Kate. My only person. Always.", img: "https://kimi-web-img.moonshot.cn/img/images.stockcake.com/7575dd889326f7f1f34e5277505db92b96ae7e79.jpg", radius: 100, speed: 0.015, angle: 3.0 },
+            { id: 10, label: "Sunset Lovers", title: "Every Evening With You", desc: "I want to watch every sunset with you. I want to grow old sitting beside you, holding your hand, thanking God for the day I found you. You're my evening star, Kate.", img: "https://kimi-web-img.moonshot.cn/img/images.stockcake.com/9fbabc4aeff6c4886ca2c7db249d35f4ca0729b2.jpg", radius: 108, speed: 0.012, angle: 4.2 },
+            { id: 11, label: "Beach Walks", title: "Our Future Adventures", desc: "I dream of walking every beach in the world with you. Holding your hand, feeling the sand, knowing that wherever we are, we're home because we're together.", img: "https://kimi-web-img.moonshot.cn/img/thumbs.dreamstime.com/b1582378aef3ec3fd478ecbbc9834e88853ad6f2.jpg", radius: 116, speed: 0.01, angle: 0.3 }
+        ];
+
+        const ROMANTIC_QUOTES = [
+            "\"Kate, you are the reason my heart beats differently...\"",
+            "\"I didn't choose to fall in love with you. My soul recognized yours.\"",
+            "\"Every love song suddenly makes sense because of you.\"",
+            "\"I want to be the man who makes you feel safe, loved, and chosen every single day.\"",
+            "\"Kate Oluckukwu Ugwuanyi — the most beautiful name my lips will ever speak.\"",
+            "\"They say home is a place. They're wrong. Home is you.\"",
+            "\"I'm not perfect, but my love for you is the truest thing about me.\"",
+            "\"One day I'll marry you, and every day after will be the best day of my life.\"",
+            "\"LUCHI'S HAIR is amazing, but you? You're my masterpiece.\"",
+            "\"My nurse, my love, my wife-to-be. I'm yours. Completely.\""
+        ];
+
+        const GALLERY_DATA = [
+            { src: "Snapchat-1328708290.jpg", caption: "Our first moments together" },
+            { src: "Snapchat-405047685.jpg", caption: "Us — always laughing" },
+            { src: "Snapchat-1598500333.jpg", caption: "My favorite person" },
+            { src: "Snapchat-327302006.jpg", caption: "Together forever" },
+            { src: "20251217_102943.jpg", caption: "You and me, baby" },
+            { src: "20251217_102924.jpg", caption: "My heart in human form" },
+            { src: "20251217_103233.jpg", caption: "Kisses for my queen" },
+            { src: "20251217_141610.jpg", caption: "LUCHI'S HAIR queen" },
+            { src: "20251217_141608.jpg", caption: "Your beautiful smile" },
+            { src: "20251217_141620.jpg", caption: "Stunning as always" },
+            { src: "20251230_181756(0).jpg", caption: "My love in red" },
+            { src: "20251230_181743.jpg", caption: "Your joy is my joy" },
+            { src: "20260105_171439.jpg", caption: "Beautiful inside and out" },
+            { src: "IMG-20260128-WA0115.jpg", caption: "That smile I live for" },
+            { src: "IMG-20260128-WA0109.jpg", caption: "My everything" },
+            { src: "IMG-20250412-WA0001.jpg", caption: "The love of my life" },
+            { src: "IMG-20250318-WA0035.jpg", caption: "My natural beauty" },
+            { src: "https://kimi-web-img.moonshot.cn/img/thumbs.dreamstime.com/a83b30120f0ad8e6b901b3bd922a0afbc90923b4.jpg", caption: "Roses for my rose" },
+            { src: "https://kimi-web-img.moonshot.cn/img/images.stockcake.com/9fbabc4aeff6c4886ca2c7db249d35f4ca0729b2.jpg", caption: "Our love silhouette" },
+            { src: "https://kimi-web-img.moonshot.cn/img/thumbs.dreamstime.com/e2723314420b72818fc56f0fb009e5ee10860fa6.jpg", caption: "Dancing through life" },
+        ];
+        // Performance Adaptive Tuning Check
+        const isMobile = window.innerWidth < 768;
+        const PARTICLE_TUNING = {
+            galaxy: isMobile ? 25000 : 75000,
+            heart: isMobile ? 10000 : 35000,
+            stars: isMobile ? 10000 : 25000
+        };
+
+        /* --- MAIN THREE.JS COSMIC ARCHITECTURE --- */
+        let scene, camera, renderer, controls;
+        let galaxyParticles, heartParticles, starParticles, cosmicDust;
+        let galaxyGeometry, heartGeometry;
+        const overlayContainer = document.getElementById('planets-overlay');
+
+        function initCosmos() {
+            const container = document.getElementById('webgl-container');
+            
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2('#030107', 0.004);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 75, 110);
+
+            renderer = new THREE.WebGLRenderer({ antialias: !isMobile, powerPreference: "high-performance", preserveDrawingBuffer: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxDistance = 250;
+            controls.minDistance = 20;
+
+            // Ambient Illumination System
+            const ambientLight = new THREE.AmbientLight('#2a1040', 1.5);
+            scene.add(ambientLight);
+
+            const centralGlow = new THREE.PointLight('#ff2a85', 3, 100);
+            centralGlow.position.set(0, 0, 0);
+            scene.add(centralGlow);
+
+            // Construct Particle Layers
+            generateBackgroundStars();
+            generateSpiralGalaxy();
+            generateGiantHeart();
+            generateDOMPlanets();
+
+            // Handle Resizing
+            window.addEventListener('resize', handleSystemResize);
+        }
+
+        /* --- 1. DYNAMIC BACKGROUND FIELD LAYER --- */
+        function generateBackgroundStars() {
+            const count = PARTICLE_TUNING.stars;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(count * 3);
+            const colors = new Float32Array(count * 3);
+
+            for (let i = 0; i < count * 3; i += 3) {
+                // Sphere mapping distribution
+                const radius = 150 + Math.random() * 350;
+                const u = Math.random();
+                const v = Math.random();
+                const theta = u * 2.0 * Math.PI;
+                const phi = Math.acos(2.0 * v - 1.0);
+                
+                positions[i] = radius * Math.sin(phi) * Math.cos(theta);
+                positions[i+1] = radius * Math.sin(phi) * Math.sin(theta);
+                positions[i+2] = radius * Math.cos(phi);
+
+                // Varied stellar palette
+                colors[i] = 0.8 + Math.random() * 0.2;
+                colors[i+1] = 0.7 + Math.random() * 0.3;
+                colors[i+2] = 1.0;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 0.8,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+
+            starParticles = new THREE.Points(geometry, material);
+            scene.add(starParticles);
+        }
+
+        /* --- 2. THE VISUAL SHIMMER SPIRAL GALAXY --- */
+        function generateSpiralGalaxy() {
+            const count = PARTICLE_TUNING.galaxy;
+            galaxyGeometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(count * 3);
+            const colors = new Float32Array(count * 3);
+            const originalY = new Float32Array(count); // Cache for wave dynamics
+
+            const parameters = {
+                radius: 65,
+                branches: 3,
+                spin: 1.2,
+                randomness: 0.4,
+                power: 4.5,
+                insideColor: new THREE.Color('#ff1493'),
+                outsideColor: new THREE.Color('#4b0082')
+            };
+
+            for (let i = 0; i < count; i++) {
+                const i3 = i * 3;
+
+                // Position calculation along spiral branches
+                const radius = Math.random() * parameters.radius;
+                const spinAngle = radius * parameters.spin;
+                const branchAngle = ((i % parameters.branches) / parameters.branches) * Math.PI * 2;
+
+                const randomX = Math.pow(Math.random(), parameters.power) * (Math.random() < 0.5 ? 1 : -1) * parameters.randomness * radius;
+                const randomY = Math.pow(Math.random(), parameters.power) * (Math.random() < 0.5 ? 1 : -1) * parameters.randomness * radius;
+                const randomZ = Math.pow(Math.random(), parameters.power) * (Math.random() < 0.5 ? 1 : -1) * parameters.randomness * radius;
+
+                positions[i3] = Math.cos(branchAngle + spinAngle) * radius + randomX;
+                positions[i3 + 1] = randomY; 
+                positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
+
+                originalY[i] = positions[i3 + 1];
+
+                // Interpolated cosmic gradient coloring
+                const mixedColor = parameters.insideColor.clone();
+                mixedColor.lerp(parameters.outsideColor, radius / parameters.radius);
+                
+                // Inject random neon sparks
+                if(Math.random() > 0.96) {
+                    mixedColor.add(new THREE.Color('#00ffff'));
+                }
+
+                colors[i3] = mixedColor.r;
+                colors[i3 + 1] = mixedColor.g;
+                colors[i3 + 2] = mixedColor.b;
+            }
+
+            galaxyGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            galaxyGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            galaxyGeometry.userData = { originalY: originalY };
+
+            // Premium circular high-intensity point drawing
+            const material = new THREE.PointsMaterial({
+                size: isMobile ? 0.25 : 0.15,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.75,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            galaxyParticles = new THREE.Points(galaxyGeometry, material);
+            scene.add(galaxyParticles);
+        }
+
+        /* --- 3. THE HEART OF PARTICLES CONSTRUCT --- */
+        function generateGiantHeart() {
+            const count = PARTICLE_TUNING.heart;
+            heartGeometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(count * 3);
+            const initialScales = new Float32Array(count);
+
+            for (let i = 0; i < count; i++) {
+                const i3 = i * 3;
+
+                // Mathematical Parametric Heart Formulas
+                const t = Math.random() * Math.PI * 2;
+                // Formulate flat profile path shape
+                const x = 16 * Math.pow(Math.sin(t), 3);
+                const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+                const z = (Math.random() - 0.5) * 8; // Deep volume extrusion factor
+
+                // Scale up and push slightly upward from center point
+                const scale = 1.3;
+                positions[i3] = x * scale;
+                positions[i3 + 1] = (y * scale) + 12; 
+                positions[i3 + 2] = z * scale;
+
+                initialScales[i] = Math.random();
+            }
+
+            heartGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            heartGeometry.userData = { initialScales: initialScales };
+
+            const material = new THREE.PointsMaterial({
+                color: new THREE.Color('#ff2a6d'),
+                size: isMobile ? 0.35 : 0.22,
+                transparent: true,
+                opacity: 0.9,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            heartParticles = new THREE.Points(heartGeometry, material);
+            // Hide initially to reveal in transition intro sequence
+            heartParticles.scale.set(0,0,0);
+            scene.add(heartParticles);
+        }
+
+        /* --- 4. PLANETARY DOM PROJECT CONVERSIONS --- */
+        function generateDOMPlanets() {
+            PLANETS_DATA.forEach(data => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'dom-planet interactive-element';
+                wrapper.id = `planet-${data.id}`;
+                wrapper.setAttribute('onclick', `handlePlanetClick(${data.id})`);
+
+                wrapper.innerHTML = `
+                    <div class="planet-sphere">
+                        <img src="${data.img}" alt="memory">
+                    </div>
+                    <div class="planet-label">${data.label}</div>
+                `;
+
+                overlayContainer.appendChild(wrapper);
+                data.domElement = wrapper;
+            });
+        }
+
+        function projectAndPositionDOMPlanets() {
+            const tempV = new THREE.Vector3();
+            
+            PLANETS_DATA.forEach(data => {
+                // Calculate position in three dimensional space coordinates
+                tempV.x = Math.cos(data.angle) * data.radius;
+                tempV.y = Math.sin(data.angle * 2) * 2; // Slight vertical wave variation
+                tempV.z = Math.sin(data.angle) * data.radius;
+
+                // Project to 2D screen coordinate mapping grid space
+                tempV.project(camera);
+
+                // Verify if planet sits behind camera viewpoint array limits
+                if (tempV.z > 1) {
+                    data.domElement.style.opacity = 0;
+                    data.domElement.style.pointerEvents = 'none';
+                    return;
+                }
+
+                // Convert projection space calculations back directly into CSS window styling coordinates
+                const x = (tempV.x * .5 + .5) * window.innerWidth;
+                const y = (tempV.y * -.5 + .5) * window.innerHeight;
+
+                data.domElement.style.opacity = 1;
+                data.domElement.style.pointerEvents = 'auto';
+                data.domElement.style.left = `${x}px`;
+                data.domElement.style.top = `${y}px`;
+            });
+        }
+
+        /* --- SYSTEM INTERACTIONS AND UI EFFECTS --- */
+        function handlePlanetClick(id) {
+            const data = PLANETS_DATA.find(p => p.id === id);
+            if (!data) return;
+
+            // Direct Particle Burst Shockwave effect at selection zone
+            triggerShockwaveBurst(data.angle, data.radius);
+
+            // Populate Modal Content
+            document.getElementById('modal-img').src = data.img;
+            document.getElementById('modal-title').innerText = data.title;
+            document.getElementById('modal-body').innerText = data.desc;
+
+            // Open Display Window
+            document.getElementById('planet-modal').classList.add('active');
+
+            // NO automatic camera zoom - user stays in control
+        }
+
+        function triggerShockwaveBurst(angle, baseRadius) {
+            const burstCount = 120;
+            const geom = new THREE.BufferGeometry();
+            const pos = new Float32Array(burstCount * 3);
+            const velocities = [];
+
+            const startX = Math.cos(angle) * baseRadius;
+            const startZ = Math.sin(angle) * baseRadius;
+
+            for(let i=0; i<burstCount; i++) {
+                const i3 = i * 3;
+                pos[i3] = startX;
+                pos[i3+1] = 0;
+                pos[i3+2] = startZ;
+
+                const theta = Math.random() * Math.PI * 2;
+                const speed = 0.5 + Math.random() * 1.5;
+                velocities.push({
+                    x: Math.cos(theta) * speed,
+                    y: (Math.random() - 0.5) * 1.2,
+                    z: Math.sin(theta) * speed
+                });
+            }
+
+            geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            const mat = new THREE.PointsMaterial({
+                color: new THREE.Color('#00dfd8'),
+                size: 0.4,
+                transparent: true,
+                opacity: 1,
+                blending: THREE.AdditiveBlending
+            });
+
+            const pSys = new THREE.Points(geom, mat);
+            scene.add(pSys);
+
+            let lifecycle = 0;
+            function updateBurst() {
+                const pArr = pSys.geometry.attributes.position.array;
+                for(let i=0; i<burstCount; i++) {
+                    const i3 = i * 3;
+                    pArr[i3] += velocities[i].x;
+                    pArr[i3+1] += velocities[i].y;
+                    pArr[i3+2] += velocities[i].z;
+                }
+                pSys.geometry.attributes.position.needsUpdate = true;
+                mat.opacity -= 0.02;
+                lifecycle++;
+
+                if(lifecycle < 60) {
+                    requestAnimationFrame(updateBurst);
+                } else {
+                    scene.remove(pSys);
+                    geom.dispose();
+                    mat.dispose();
+                }
+            }
+            updateBurst();
+        }
+
+        // Close Interaction Modal Window
+        document.getElementById('modal-close-btn').addEventListener('click', () => {
+            document.getElementById('planet-modal').classList.remove('active');
+            // NO camera re-centering - user stays in control
+        });
+
+        /* --- RENDERING SYSTEM & CONTINUOUS CLOCK TICK ANIMATIONS --- */
+        let clock = new THREE.Clock();
+
+        function runCosmicEngineLoop() {
+            requestAnimationFrame(runCosmicEngineLoop);
+
+            const elapsedTime = clock.getElapsedTime();
+
+            // 1. Slow continuous Galaxy Rotation and structural expansion waves
+            if (galaxyParticles) {
+                galaxyParticles.rotation.y = elapsedTime * 0.025;
+                
+                // Micro wavy breathing transformations applied via original tracking allocations
+                const posAttr = galaxyParticles.geometry.attributes.position;
+                const originalY = galaxyParticles.geometry.userData.originalY;
+                for(let i=0; i<posAttr.count; i++) {
+                    const x = posAttr.getX(i);
+                    const z = posAttr.getZ(i);
+                    const dist = Math.sqrt(x*x + z*z);
+                    // Wave calculation variables
+                    posAttr.setY(i, originalY[i] + Math.sin(elapsedTime * 2 + dist * 0.15) * 0.6);
+                }
+                posAttr.needsUpdate = true;
+            }
+
+            // 2. Heart Beat and Cosmic Pulse modulation architectures
+            if (heartParticles) {
+                heartParticles.rotation.y = -elapsedTime * 0.04;
+                
+                // Compound beating curve logic simulating organic pulses
+                const pulseScale = 1.0 + (Math.pow(Math.sin(elapsedTime * 3.5), 4) * 0.08) + (Math.pow(Math.sin(elapsedTime * 7.0), 2) * 0.03);
+                
+                // Only scale if the introduction timeline sequence completed fully setup controls
+                if(heartParticles.scale.x > 0.1) {
+                    heartParticles.scale.set(pulseScale, pulseScale, pulseScale);
+                }
+
+                // Shimmering particle alpha modifications over time vector spaces
+                const heartPos = heartParticles.geometry.attributes.position;
+                const initialScales = heartParticles.geometry.userData.initialScales;
+                // Ambient fluctuation intensity changes over timeline sequence
+                heartParticles.material.size = (isMobile ? 0.35 : 0.22) * (1 + Math.sin(elapsedTime * 5) * 0.1);
+            }
+
+            // 3. Increment continuous DOM Orbital Track Calculations across timelines
+            PLANETS_DATA.forEach(data => {
+                data.angle += data.speed * 0.015; // Slow relative speed track indexing
+            });
+            projectAndPositionDOMPlanets();
+
+            // 4. Update core control systems
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function handleSystemResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        /* --- GALLERY POPULATION --- */
+        function populateGallery() {
+            const grid = document.getElementById('gallery-grid');
+            GALLERY_DATA.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'gallery-item';
+                div.innerHTML = `
+                    <img src="${item.src}" alt="${item.caption}" loading="lazy">
+                    <div class="gallery-caption">${item.caption}</div>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        /* --- COMPLEMENTARY PERIPHERAL HUD CONTROLLER PIPELINES --- */
+        
+        // Custom Dynamic Date Layout Renderer
+        function initTimelineClock() {
+            const display = document.getElementById('current-date');
+            setInterval(() => {
+                const now = new Date();
+                display.innerText = now.toLocaleString();
+            }, 1000);
+        }
+
+        // Live Incrementing Dynamic Bond Counter
+        function initCounterTimeline() {
+            const counterElement = document.getElementById('love-counter');
+            // Mock incremental epoch tracking system setup parameters
+            let scoreValue = 4730415; 
+            setInterval(() => {
+                scoreValue += Math.floor(Math.random() * 3) + 1;
+                counterElement.innerText = scoreValue.toLocaleString();
+            }, 1200);
+        }
+
+        // Quote Loop Interchanger Ticker
+        function initQuoteSystem() {
+            const target = document.getElementById('quote-display');
+            let idx = 0;
+            setInterval(() => {
+                gsap.to(target, {opacity: 0, duration: 0.5, onComplete: () => {
+                    idx = (idx + 1) % ROMANTIC_QUOTES.length;
+                    target.innerText = ROMANTIC_QUOTES[idx];
+                    gsap.to(target, {opacity: 1, duration: 0.5});
+                }});
+            }, 6000);
+        }
+
+        // Audio Management Configuration
+        const audio = document.getElementById('bg-audio');
+        const musicBtn = document.getElementById('btn-music');
+        const volSlider = document.getElementById('vol-slider');
+        let isPlaying = false;
+
+        musicBtn.addEventListener('click', () => {
+            if(!isPlaying) {
+                audio.play().catch(err => console.log("Audio contexts context constraints deferred initialization."));
+                musicBtn.innerHTML = `<i data-lucide="volume-2"></i>`;
+                musicBtn.style.borderColor = "var(--cyan-glow)";
+                isPlaying = true;
+            } else {
+                audio.pause();
+                musicBtn.innerHTML = `<i data-lucide="music"></i>`;
+                musicBtn.style.borderColor = "var(--glass-border)";
+                isPlaying = false;
+            }
+            lucide.createIcons();
+        });
+
+        volSlider.addEventListener('input', (e) => {
+            audio.volume = e.target.value;
+        });
+
+        // Screenshot Functional Generation Capture Pipeline
+        document.getElementById('btn-screenshot').addEventListener('click', () => {
+            // Force rendering pass execution sequence immediately before print frame snap call
+            renderer.render(scene, camera);
+            const dataURL = renderer.domElement.toDataURL('image/png');
+            
+            const link = document.createElement('a');
+            link.download = `Kate_My_Love_Galaxy_${Date.now()}.png`;
+            link.href = dataURL;
+            link.click();
+        });
+
+        // Scroll Reveal Activation System for structural narrative elements
+        window.addEventListener('scroll', () => {
+            const cards = document.querySelectorAll('.story-card');
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                if(rect.top < window.innerHeight * 0.85) {
+                    card.classList.add('visible');
+                }
+            });
+        });
+
+        /* --- PRELOADER SIMULATOR SEQUENCE ENGINE CONTROLLER --- */
+        function triggerPreloadResolution() {
+            const bar = document.getElementById('loader-bar');
+            let progress = 0;
+            
+            const interval = setInterval(() => {
+                progress += Math.random() * 8 + 2;
+                if(progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    // Finalize out UI Loading Layer presentation setups smoothly
+                    setTimeout(() => {
+                        const loader = document.getElementById('preloader');
+                        loader.style.opacity = 0;
+                        loader.style.visibility = 'hidden';
+                        
+                        // Execute cinematic introduction camera animation pass sequence
+                        executeIntroCinemaPass();
+                    }, 400);
+                }
+                bar.style.width = `${progress}%`;
+            }, 80);
+        }
+
+        function executeIntroCinemaPass() {
+            // Complex coordinated spatial transition configurations via GSAP integration layouts
+            gsap.from(camera.position, {
+                x: 0,
+                y: 180,
+                z: 220,
+                duration: 3.5,
+                ease: "power3.inOut"
+            });
+
+            // Smooth scaling emergence reveal execution on center heart geometry
+            gsap.to(heartParticles.scale, {
+                x: 1,
+                y: 1,
+                z: 1,
+                duration: 4,
+                delay: 1,
+                ease: "elastic.out(1, 0.5)"
+            });
+        }
+
+        /* --- PRIMARY INITIALIZATION APPLICATION ENTRY POINT EXECUTION --- */
+        window.onload = () => {
+            initCosmos();
+            populateGallery();
+            initTimelineClock();
+            initCounterTimeline();
+            initQuoteSystem();
+            runCosmicEngineLoop();
+            triggerPreloadResolution();
+        };
+    </script>
+</body>
+</html>
